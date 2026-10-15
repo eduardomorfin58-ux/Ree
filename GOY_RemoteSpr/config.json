@@ -1,0 +1,41 @@
+Conexión segura a configuración estática de GitHub.
+-- Pega este bloque DESPUÉS de: local function setStatus(t) status.Text = t end
+-- Primero sube config.json al repositorio en GOY_RemoteSpr/config.json.
+-- Este bloque solo lee JSON; no descarga ni ejecuta código Lua remoto.
+
+local HttpService = game:GetService("HttpService")
+local GOY_GITHUB_CONFIG_URL =
+    "https://raw.githubusercontent.com/eduardomorfin58-ux/Ree/main/GOY_RemoteSpr/config.json"
+
+local function fetchGOYGitHubConfig()
+    local requestOK, raw = pcall(function()
+        return game:HttpGet(GOY_GITHUB_CONFIG_URL)
+    end)
+    if not requestOK or type(raw) ~= "string" then
+        return nil, "No se pudo descargar config.json"
+    end
+
+    local decodeOK, config = pcall(function()
+        return HttpService:JSONDecode(raw)
+    end)
+    if not decodeOK or type(config) ~= "table" then
+        return nil, "config.json no es JSON válido"
+    end
+    if type(config.version) ~= "string" or #config.version > 32 then
+        return nil, "Falta una versión válida en config.json"
+    end
+    if type(config.displayName) ~= "string" or #config.displayName > 80 then
+        return nil, "Falta displayName válido en config.json"
+    end
+
+    return config
+end
+
+task.spawn(function()
+    local config, err = fetchGOYGitHubConfig()
+    if config then
+        setStatus((config.displayName or "GOY") .. " | GitHub conectado | v" .. config.version)
+    else
+        setStatus("GitHub sin conexión: " .. tostring(err))
+    end
+end)
