@@ -1,0 +1,5 @@
+{
+  "aiUrl": "",
+  "displayName": "IA GOY",
+  "nota": "Pon en aiUrl la URL https de tu worker (worker.js). Nunca pongas claves aqui: la clave vive en el worker."
+}
