@@ -3,7 +3,7 @@
 //   (Cloudflare > tu worker > Settings > Variables and Secrets > Add > Secret).
 // Opcional: variable GEMINI_MODEL (por defecto gemini-2.5-flash).
 //
-// El script envía:  POST { kind, message, game, user, history? }
+// El script envía:  POST { kind, message, context?, game, user, history? }  (message ya trae la instrucción del botón)
 // El worker responde: { reply: "..." }
 
 const SYSTEM = [
@@ -49,14 +49,15 @@ export default {
         contents.push({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: String(m.content).slice(0, 8000) }] });
       }
     }
-    contents.push({ role: "user", parts: [{ text: (PREFIX[kind] || "") + message }] });
+    contents.push({ role: "user", parts: [{ text: message }] });
+    const context = String(body.context || "").slice(0, 12000);
 
     const model = env.GEMINI_MODEL || "gemini-2.5-flash";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
     const r = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_KEY },
-      body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM }] }, contents }),
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: context ? SYSTEM + "\n\n" + context : SYSTEM }] }, contents }),
     });
     if (!r.ok) return json({ reply: `Gemini respondió ${r.status}: ${(await r.text()).slice(0, 300)}` }, 502);
     const data = await r.json();
