@@ -1,5 +1,7 @@
 {
-  "aiUrl": "",
+  "aiUrl": "https://text.pollinations.ai/openai",
+  "format": "openai",
+  "model": "openai",
   "displayName": "IA GOY",
-  "nota": "Pon en aiUrl la URL https de tu worker (worker.js). Nunca pongas claves aqui: la clave vive en el worker."
+  "nota": "IA publica gratis sin clave. Si haces tu worker.js, pon su URL https aqui y format: goy. Nunca pongas claves aqui."
 }
